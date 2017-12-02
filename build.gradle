@@ -18,7 +18,7 @@ group 'se.yolean'
 sourceCompatibility = 1.8
 
 apply plugin: 'application'
-mainClassName = 'se.yolean.kafka.topic.client.cli.Client'
+mainClassName = 'se.yolean.kafka.topic.manager.TopicManager'
 
 configurations {
   compile.exclude group: 'org.slf4j', module: 'slf4j-log4j12'
@@ -30,9 +30,6 @@ dependencies {
   compile group: 'com.google.inject', name: 'guice', version: '4.1.0'
 
   compile group: 'org.apache.kafka', name: 'kafka-clients', version: '1.0.0'
-
-  //compile group: 'org.apache.kafka', name: 'kafka_2.12', version: '1.0.0'
-  //compile group: 'com.101tec', name: 'zkclient', version: '0.10'
 
   compile group: 'io.confluent', name: 'kafka-schema-registry-client', version: '4.0.0'
 
