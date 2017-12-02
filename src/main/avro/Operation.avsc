@@ -1,0 +1,11 @@
+{
+  "name": "Operation",
+  "namespace": "se.yolean.kafka.topic.declaration",
+  "type": "enum",
+  "symbols" : [
+    "EXIST",
+    "UPDATE",
+    "DELETE"
+  ],
+  "doc": "EXIST means we try to be idempotent, UPDATE means force update (for example to propagate service config changes to existing topics), DELETE will probably never be implemented"
+}

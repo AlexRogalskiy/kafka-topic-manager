@@ -1,0 +1,14 @@
+{
+  "name": "ManagedTopic",
+  "namespace": "se.yolean.kafka.topic.declaration",
+  "type": "record",
+  "fields" : [
+    {
+      "name": "op",
+      "type": "Operation",
+      "default": "EXIST"
+  	},
+    {"name": "name", "type": "string" },
+    {"name": "restProducerEndpointName", "type": "string", "default": null }
+  ]
+}
