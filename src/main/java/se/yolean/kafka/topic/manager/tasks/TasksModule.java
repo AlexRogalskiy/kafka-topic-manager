@@ -3,11 +3,15 @@ package se.yolean.kafka.topic.manager.tasks;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.github.structlog4j.ILogger;
+import com.github.structlog4j.SLoggerFactory;
 import com.google.inject.AbstractModule;
 
 import se.yolean.kafka.topic.manager.ManagedTopicScope;
 
 public class TasksModule extends AbstractModule {
+
+  private final ILogger logger = SLoggerFactory.getLogger(this.getClass());
 
   private Map<Class<?>, Class<?>> added = new LinkedHashMap<>(0);
 
@@ -17,6 +21,7 @@ public class TasksModule extends AbstractModule {
    * @param impl .to(impl)
    */
   public <T> void add(Class<T> task, Class<? extends T> impl) {
+    logger.debug("Adding task", "type", task, "impl", impl);
     if (added.containsKey(task)) {
       throw new IllegalStateException("Tasks already contains key " + task);
     }

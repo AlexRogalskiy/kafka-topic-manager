@@ -75,6 +75,9 @@ public class TopicsLogConsumer implements Runnable {
       for (int i = 0; pollsMax == -1 || i < pollsMax; i++) {
         ConsumerRecords<String, String> records = consumer.poll(pollTimeout);
         if (records.isEmpty()) {
+          log.debug("Records is empty, whatever that means");
+        }
+        if (records.count() == 0) {
           log.debug("This poll consumed no declarations");
         }
         for (ConsumerRecord<String, String> record : records) {
@@ -82,7 +85,7 @@ public class TopicsLogConsumer implements Runnable {
             log.info("Handler success, committing ", "partition", record.partition(), "offset", record.offset(), "managedTopicName", record.key());
             consumer.commitSync();
           } else {
-            throw new RuntimeException("Failed to process topic declaration, and got no error handling for it. Exiting.");
+            throw new RuntimeException("Failed to process topic declaration, TODO error handling for that. Exiting.");
           }
         }
       }

@@ -1,6 +1,6 @@
 package se.yolean.kafka.topic.manager;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -9,7 +9,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import se.yolean.kafka.topic.manager.init.ManagementTopicDeclarationProvider;
-import se.yolean.kafka.topic.manager.schemaregistry.SchemaRegistryModule;
 import se.yolean.kafka.topic.manager.tasks.TasksModule;
 
 public class ManagedTopicHandlerIntegrationTest {
@@ -24,8 +23,10 @@ public class ManagedTopicHandlerIntegrationTest {
         .override("management.topic.name", IDT)
         .override("management.consumer.group.id", IDT)
         .override("management.topic.rest.producer.name", IDT)
-        .override("topic.declarations.consumer.polls.max", 3),
-        new SchemaRegistryModule().withTasks(tasksModule)
+        .override("topic.declarations.consumer.polls.max", 2)
+        .override("topic.declarations.consumer.poll.timeout.ms", 1001),
+        new se.yolean.kafka.topic.manager.kafkaadmin.Config().withTasks(tasksModule),
+        new se.yolean.kafka.topic.manager.schemaregistry.Config().withTasks(tasksModule)
         );
 
     // Configure the management topic

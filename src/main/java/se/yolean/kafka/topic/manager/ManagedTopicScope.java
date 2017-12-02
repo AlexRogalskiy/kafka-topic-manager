@@ -13,11 +13,16 @@ public class ManagedTopicScope {
     this.declaration = topicDeclaration;
   }
 
-  /**
-   * @return access to the generated class' instance, don't mutate!
-   */
-  public ManagedTopic getDeclaration() {
-    return declaration;
+  public String getName() {
+    return this.declaration.getName();
+  }
+
+  public String getSchemaRegistryKeyAvro() {
+    return this.declaration.getSchemaRegistryKeyAvro();
+  }
+
+  public String getSchemaRegistryValueAvro() {
+    return this.declaration.getSchemaRegistryValueAvro();
   }
 
 }

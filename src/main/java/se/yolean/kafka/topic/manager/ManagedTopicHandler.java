@@ -8,11 +8,11 @@ import com.github.structlog4j.SLoggerFactory;
 import com.google.inject.Injector;
 
 import se.yolean.kafka.topic.manager.init.ManagedTopicModule;
-import se.yolean.kafka.topic.manager.schemaregistry.SchemaResult;
 import se.yolean.kafka.topic.manager.tasks.Result;
 import se.yolean.kafka.topic.manager.tasks.SchemaUpdate;
 import se.yolean.kafka.topic.manager.tasks.Task;
 import se.yolean.kafka.topic.manager.tasks.TasksModule;
+import se.yolean.kafka.topic.manager.tasks.TopicCreate;
 import se.yolean.kafka.topic.declaration.ManagedTopic;
 
 /**
@@ -45,6 +45,7 @@ public class ManagedTopicHandler {
 
     // Should probably based on analysis of the ManagedTopic, maybe as rules in ManagedTopicScope
     List<Class<? extends Task<?>>> tasks = new LinkedList<>();
+    tasks.add(TopicCreate.class);
     tasks.add(SchemaUpdate.class);
 
     log.info("Tasks", "list", tasks);

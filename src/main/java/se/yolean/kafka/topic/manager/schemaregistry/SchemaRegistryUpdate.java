@@ -30,14 +30,12 @@ public class SchemaRegistryUpdate implements SchemaUpdate {
   @Override
   public SchemaResult call() throws Exception {
 
-    ManagedTopic managementTopicDeclaration = managed.getDeclaration();
-
-    if (managementTopicDeclaration.getSchemaRegistryValueAvro() == null) {
+    if (managed.getSchemaRegistryValueAvro() == null) {
       log.info("No schema update needed. Declaration contains no schema");
     }
 
-    String valueSubject = managementTopicDeclaration.getName() + "-value";
-    org.apache.avro.Schema valueAvro = parser.parse(managementTopicDeclaration.getSchemaRegistryValueAvro());
+    String valueSubject = managed.getName() + "-value";
+    org.apache.avro.Schema valueAvro = parser.parse(managed.getSchemaRegistryValueAvro());
 
     int valueSchemaId;
     try {

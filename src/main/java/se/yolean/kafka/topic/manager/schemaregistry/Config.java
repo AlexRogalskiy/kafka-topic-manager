@@ -1,13 +1,13 @@
 package se.yolean.kafka.topic.manager.schemaregistry;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Module;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import se.yolean.kafka.topic.manager.tasks.ConfigWithTasks;
 import se.yolean.kafka.topic.manager.tasks.SchemaUpdate;
 import se.yolean.kafka.topic.manager.tasks.TasksModule;
 
-public class SchemaRegistryModule extends AbstractModule {
+public class Config extends ConfigWithTasks {
 
   @Override
   protected void configure() {
@@ -15,7 +15,8 @@ public class SchemaRegistryModule extends AbstractModule {
     bind(SchemaRegistryClient.class).toProvider(SchemaRegistryClientProvider.class);
   }
 
-  public Module withTasks(TasksModule tasksModule) {
+  @Override
+  public AbstractModule withTasks(TasksModule tasksModule) {
     tasksModule.add(SchemaUpdate.class, SchemaRegistryUpdate.class);
     return this;
   }

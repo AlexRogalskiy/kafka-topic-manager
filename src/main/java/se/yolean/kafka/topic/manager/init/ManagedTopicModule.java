@@ -10,16 +10,16 @@ public class ManagedTopicModule extends AbstractModule {
 
   private final ILogger logger = SLoggerFactory.getLogger(this.getClass());
 
-  private ManagedTopicScope scope;
+  private ManagedTopicScope managed;
 
   public ManagedTopicModule(ManagedTopicScope scope) {
-    this.scope = scope;
+    this.managed = scope;
   }
 
   @Override
   protected void configure() {
-    logger.info("Current scope set to", "topicName", scope.getDeclaration().getName());
-    bind(ManagedTopicScope.class).toInstance(scope);
+    logger.info("Current scope set to", "topicName", managed.getName());
+    bind(ManagedTopicScope.class).toInstance(managed);
   }
 
 }

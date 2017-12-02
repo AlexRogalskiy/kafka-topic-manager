@@ -8,7 +8,6 @@ import com.google.inject.Injector;
 import se.yolean.kafka.topic.manager.init.ConfigModule;
 import se.yolean.kafka.topic.manager.init.InitModule;
 import se.yolean.kafka.topic.manager.init.MetricsModule;
-import se.yolean.kafka.topic.manager.schemaregistry.SchemaRegistryModule;
 import se.yolean.kafka.topic.manager.tasks.TasksModule;
 import se.yolean.kafka.topic.declaration.ManagedTopic;
 
@@ -24,7 +23,8 @@ public class TopicManager {
     Injector appContext = Guice.createInjector(
         configModule,
         new MetricsModule(),
-        new SchemaRegistryModule().withTasks(tasksModule)
+        new se.yolean.kafka.topic.manager.kafkaadmin.Config().withTasks(tasksModule),
+        new se.yolean.kafka.topic.manager.schemaregistry.Config().withTasks(tasksModule)
         );
 
     // Manager needs to be able to start its own child contexts, so we initialize it here (or can it be Guice aware?)
