@@ -10,6 +10,7 @@ import com.google.inject.Injector;
 
 import se.yolean.kafka.topic.manager.init.ManagementTopicDeclarationProvider;
 import se.yolean.kafka.topic.manager.schemaregistry.SchemaRegistryModule;
+import se.yolean.kafka.topic.manager.tasks.TasksModule;
 
 public class ManagedTopicHandlerIntegrationTest {
 
@@ -18,16 +19,17 @@ public class ManagedTopicHandlerIntegrationTest {
     final String ID = "test-" + this.getClass().getSimpleName() + "-" + System.currentTimeMillis();
     final String IDT = ID + "-mgmt";
 
+    TasksModule tasksModule = new TasksModule();
     Injector context = Guice.createInjector(new ItestConfigModule()
         .override("management.topic.name", IDT)
         .override("management.consumer.group.id", IDT)
         .override("management.topic.rest.producer.name", IDT)
         .override("topic.declarations.consumer.polls.max", 3),
-        new SchemaRegistryModule()
+        new SchemaRegistryModule().withTasks(tasksModule)
         );
 
     // Configure the management topic
-    ManagedTopicHandler handler = new ManagedTopicHandler(context);
+    ManagedTopicHandler handler = new ManagedTopicHandler(context, tasksModule);
     ManagementTopicDeclarationProvider mgmtProvider = context.getInstance(ManagementTopicDeclarationProvider.class);
 
     // Run init

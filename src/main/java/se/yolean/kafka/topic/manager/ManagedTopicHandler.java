@@ -12,6 +12,7 @@ import se.yolean.kafka.topic.manager.schemaregistry.SchemaResult;
 import se.yolean.kafka.topic.manager.tasks.Result;
 import se.yolean.kafka.topic.manager.tasks.SchemaUpdate;
 import se.yolean.kafka.topic.manager.tasks.Task;
+import se.yolean.kafka.topic.manager.tasks.TasksModule;
 import se.yolean.kafka.topic.declaration.ManagedTopic;
 
 /**
@@ -23,8 +24,11 @@ public class ManagedTopicHandler {
 
   private Injector appContext;
 
-  public ManagedTopicHandler(Injector appContext) {
+  private TasksModule tasksModule;
+
+  public ManagedTopicHandler(Injector appContext, TasksModule tasksModule) {
     this.appContext = appContext;
+    this.tasksModule = tasksModule;
   }
 
   /**
@@ -35,7 +39,9 @@ public class ManagedTopicHandler {
 
     ManagedTopicScope scope = new ManagedTopicScope(declaration);
 
-    Injector handlerContext = appContext.createChildInjector(new ManagedTopicModule(scope));
+    Injector handlerContext = appContext.createChildInjector(
+        new ManagedTopicModule(scope),
+        tasksModule);
 
     // Should probably based on analysis of the ManagedTopic, maybe as rules in ManagedTopicScope
     List<Class<? extends Task<?>>> tasks = new LinkedList<>();
@@ -56,7 +62,8 @@ public class ManagedTopicHandler {
       }
     }
 
-    return false;
+    log.warn("Handler completed, but TODO check for async Results");
+    return true;
   }
 
 }

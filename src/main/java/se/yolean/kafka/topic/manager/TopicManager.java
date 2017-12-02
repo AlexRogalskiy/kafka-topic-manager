@@ -9,6 +9,7 @@ import se.yolean.kafka.topic.manager.init.ConfigModule;
 import se.yolean.kafka.topic.manager.init.InitModule;
 import se.yolean.kafka.topic.manager.init.MetricsModule;
 import se.yolean.kafka.topic.manager.schemaregistry.SchemaRegistryModule;
+import se.yolean.kafka.topic.manager.tasks.TasksModule;
 import se.yolean.kafka.topic.declaration.ManagedTopic;
 
 public class TopicManager {
@@ -18,15 +19,16 @@ public class TopicManager {
   public static void main(String[] args) {
 
     ConfigModule configModule = new ConfigModule(args);
+    TasksModule tasksModule = new TasksModule();
 
     Injector appContext = Guice.createInjector(
         configModule,
         new MetricsModule(),
-        new SchemaRegistryModule()
+        new SchemaRegistryModule().withTasks(tasksModule)
         );
 
     // Manager needs to be able to start its own child contexts, so we initialize it here (or can it be Guice aware?)
-    ManagedTopicHandler handler = new ManagedTopicHandler(appContext);
+    ManagedTopicHandler handler = new ManagedTopicHandler(appContext, tasksModule);
 
     log.info("Initializing management configuration");
     Injector initContext = appContext.createChildInjector(new InitModule());

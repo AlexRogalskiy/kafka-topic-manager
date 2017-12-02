@@ -5,7 +5,7 @@ public class TODOErrorHandling extends RuntimeException {
   private static final long serialVersionUID = 1L;
 
   public TODOErrorHandling(Throwable actual) {
-    super(actual);
+    super("TODO implement error handling for:", actual);
   }
 
 }
