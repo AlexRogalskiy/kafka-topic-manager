@@ -1,4 +1,4 @@
-package se.yolean.kafka.topic.manager.config;
+package se.yolean.kafka.topic.manager.init;
 
 import java.io.IOException;
 

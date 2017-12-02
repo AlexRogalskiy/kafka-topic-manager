@@ -8,7 +8,7 @@ import java.util.Properties;
 
 import com.google.inject.name.Names;
 
-import se.yolean.kafka.topic.manager.config.ConfigModule;
+import se.yolean.kafka.topic.manager.init.ConfigModule;
 
 public class ItestConfigModule extends ConfigModule {
 
