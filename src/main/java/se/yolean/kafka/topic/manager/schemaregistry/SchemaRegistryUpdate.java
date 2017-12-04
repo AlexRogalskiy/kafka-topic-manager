@@ -32,27 +32,46 @@ public class SchemaRegistryUpdate implements SchemaUpdate {
 
   @Override
   public SchemaResult call() throws Exception {
+    SchemaResult result = new SchemaResult();
 
-    if (managed.getSchemaRegistryValueAvro() == null) {
+    String keySchemaSource = managed.getSchemaRegistryKeyAvro();
+    if (keySchemaSource != null) {
+      int keySchemaId = update(keySchemaSource, TOPIC_SCHEMA_KEY_SUFFIX);
+      log.info("Key schema registered for", "declaration", managed.getName(), "id", keySchemaId);
+      result.setKeySchemaId(keySchemaId);
+    } else {
+      log.debug("Declaration contains no key schema", "declaration", managed.getName());
+    }
+
+    String valueSchemaSource = managed.getSchemaRegistryValueAvro();
+    if (valueSchemaSource != null) {
+      int valueSchemaId = update(valueSchemaSource, TOPIC_SCHEMA_VALUE_SUFFIX);
+      log.info("Value schema registered for", "declaration", managed.getName(), "id", valueSchemaId);
+      result.setValueSchemaId(valueSchemaId);
+    } else {
+      log.debug("Declaration contains no value schema", "declaration", managed.getName());
+    }
+
+    return result;
+  }
+
+  private int update(String avroSource, String topicSchemaSuffix) {
+    if (avroSource == null) {
       log.info("No schema update needed. Declaration contains no schema");
     }
 
-    String valueSubject = managed.getName() + TOPIC_SCHEMA_VALUE_SUFFIX;
-    org.apache.avro.Schema valueAvro = parser.parse(managed.getSchemaRegistryValueAvro());
+    String subject = managed.getName() + topicSchemaSuffix;
+    org.apache.avro.Schema avro = parser.parse(avroSource);
 
-    int valueSchemaId;
+    int resultSchemaId;
     try {
-      valueSchemaId = client.register(valueSubject, valueAvro);
+      resultSchemaId = client.register(subject, avro);
     } catch (IOException e) {
       throw new TODOErrorHandling(e);
     } catch (RestClientException e) {
       throw new TODOErrorHandling(e);
     }
-
-    // TODO do we get a new version every time now?
-    log.info("Schema registered for value", "id", valueSchemaId);
-
-    return new SchemaResult().setValueSchemaId(valueSchemaId);
+    return resultSchemaId;
   }
 
 }
