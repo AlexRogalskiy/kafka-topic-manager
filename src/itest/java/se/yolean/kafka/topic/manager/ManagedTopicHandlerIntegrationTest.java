@@ -1,33 +1,27 @@
 package se.yolean.kafka.topic.manager;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Response;
-
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.mockito.internal.verification.Times;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import se.yolean.kafka.topic.declaration.ManagedTopic;
 import se.yolean.kafka.topic.manager.init.ManagementTopicDeclarationProvider;
 import se.yolean.kafka.topic.manager.tasks.TasksModule;
@@ -79,11 +73,14 @@ public class ManagedTopicHandlerIntegrationTest {
     // Test that we can consume the configured management topic
     TopicsLogConsumer consumer = context.getInstance(TopicsLogConsumer.class);
     ManagedTopicHandler mockHandler = Mockito.mock(ManagedTopicHandler.class);
+    Mockito.when(mockHandler.handle(Mockito.any(ManagedTopic.class))).thenReturn(true);
     consumer.setMessageHandler(mockHandler);
     consumer.run();
 
     // Now produce to the REST endpoint
     String newtopic1 = TN + "-newtopic1";
+    /* The whole point of this service is to expose a REST endpoint for topic declarations,
+     * but we'll be producing using the regular Kafka client for now to get the Avro right
     JsonObject json = Json.createObjectBuilder()
         .add("records", Json.createArrayBuilder()
             .add(Json.createObjectBuilder()
@@ -107,6 +104,30 @@ public class ManagedTopicHandlerIntegrationTest {
     Response restProxyResultJson = req.get(1003, TimeUnit.MILLISECONDS);
     System.out.println(restProxyResultJson.readEntity(String.class));
     assertEquals(200, restProxyResultJson.getStatus());
+    */
+    ManagedTopic newtopic1declaration = new ManagedTopic();
+    newtopic1declaration.setName(newtopic1);
+    Properties producerProps = new Properties();
+    producerProps.setProperty("bootstrap.servers", context.getInstance(Key.get(String.class, Names.named("bootstrap.servers"))));
+    producerProps.setProperty("schema.registry.url", context.getInstance(Key.get(String.class, Names.named("schema.registry.url"))));
+    //KafkaProducer<String, ManagedTopic> producer = new KafkaProducer<>(producerProps, serializerKeys, serializerValues);
+    producerProps.setProperty("key.serializer", KafkaAvroSerializer.class.getName());
+    producerProps.setProperty("value.serializer", KafkaAvroSerializer.class.getName());
+    KafkaProducer<Object, Object> producer = new KafkaProducer<>(producerProps);
+    //ProducerRecord<String, ManagedTopic> record = new ProducerRecord<String, ManagedTopic>(TT, newtopic1, newtopic1declaration);
+    ProducerRecord<Object, Object> record = new ProducerRecord<Object, Object>(TT, newtopic1, newtopic1declaration);
+    // Added because of org.apache.avro.AvroTypeException: Not an enum: null
+    // .. but setting the field didn't help so it's now removed from the schema
+    //newtopic1declaration.setOp(Operation.UPDATE);
+    // Added because of org.apache.kafka.common.errors.SerializationException: Error serializing Avro message
+    // Caused by: java.lang.NullPointerException: null of string of se.yolean.kafka.topic.declaration.ManagedTopic
+    newtopic1declaration.setSchemaRegistryKeyAvro(ManagementTopicDeclarationProvider.KEY_AVRO_SCHEMA);
+    newtopic1declaration.setSchemaRegistryValueAvro(ManagementTopicDeclarationProvider.KEY_AVRO_SCHEMA);
+    // produce
+    Future<RecordMetadata> send = producer.send(record);
+    RecordMetadata recordMetadata = send.get();
+    producer.close();
+    assertNotNull(recordMetadata);
 
     // Run another consumer round and check that is invokes the topic handler
     consumer.run();

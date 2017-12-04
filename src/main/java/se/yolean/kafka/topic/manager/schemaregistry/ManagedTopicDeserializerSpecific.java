@@ -8,9 +8,10 @@ import com.github.structlog4j.ILogger;
 import com.github.structlog4j.SLoggerFactory;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import se.yolean.kafka.topic.declaration.ManagedTopic;
 
-public class ManagedTopicDeserializerConfluentWrapper implements ManagedTopicDeserializer {
+public class ManagedTopicDeserializerSpecific implements ManagedTopicDeserializer {
 
   private final ILogger logger = SLoggerFactory.getLogger(this.getClass());
 
@@ -20,14 +21,18 @@ public class ManagedTopicDeserializerConfluentWrapper implements ManagedTopicDes
   @Override
   public ManagedTopic deserialize(String topic, byte[] data) {
     logger.debug("Deserializing", "topic", topic, "data", new String(data));
-    ManagedTopic record = new ManagedTopic();
-    Object deserialize = schemaRegistryDeserializer.deserialize(topic, data);
-    deserialize.getClass();
-    return record;
+    Object specific = schemaRegistryDeserializer.deserialize(topic, data);
+    return convert(specific);
+  }
+
+  protected ManagedTopic convert(Object deserializedByKafkaAvro) {
+    return (ManagedTopic) deserializedByKafkaAvro;
   }
 
   @Override
   public void configure(Map<String, ?> configs, boolean isKey) {
+    // Probably not called, because we set an instance on KafkaProducer
+    logger.debug("Config", KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, configs.get(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG));
     schemaRegistryDeserializer.configure(configs, isKey);
   }
 

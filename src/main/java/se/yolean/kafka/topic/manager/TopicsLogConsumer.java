@@ -89,7 +89,7 @@ public class TopicsLogConsumer implements Runnable {
           log.debug("This poll consumed no declarations");
         }
         for (ConsumerRecord<Object, ManagedTopic> record : records) {
-          if (handle(null)) {
+          if (handler.handle(record.value())) {
             log.info("Handler success, committing ", "partition", record.partition(), "offset", record.offset(), "managedTopicName", record.key());
             consumer.commitSync();
           } else {
@@ -100,15 +100,6 @@ public class TopicsLogConsumer implements Runnable {
     } finally {
       consumer.close();
     }
-  }
-
-  /**
-   * @param message topic declaration.
-   * @return to commit offset for processed declarations.
-   */
-  protected boolean handle(ManagedTopic message) {
-    log.warn("TODO implement message handling");
-    return false;
   }
 
 }

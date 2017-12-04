@@ -17,7 +17,7 @@ public class Config extends ConfigWithTasks {
     bind(SchemaRegistryClient.class).toProvider(SchemaRegistryClientProvider.class);
     bind(KafkaAvroDeserializer.class).toProvider(KafkaAvroDeserializerProvider.class);
     bind(KafkaAvroSerializer.class).toProvider(KafkaAvroSerializerProvider.class);
-    bind(ManagedTopicDeserializer.class).to(ManagedTopicDeserializerConfluentWrapper.class);
+    bind(ManagedTopicDeserializer.class).to(ManagedTopicDeserializerSpecific.class);
   }
 
   @Override

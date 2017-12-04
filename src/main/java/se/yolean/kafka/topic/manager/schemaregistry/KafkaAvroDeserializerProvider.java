@@ -28,7 +28,7 @@ public class KafkaAvroDeserializerProvider implements Provider<KafkaAvroDeserial
     props.put(KafkaAvroDeserializerConfig.AUTO_REGISTER_SCHEMAS, "false");
     // but how do we tell it to deserialize to ManagedTopic?
     // - trying a wrapper class now
-    //props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true");
+    props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true");
     KafkaAvroDeserializer deserializer = new KafkaAvroDeserializer(schemaRegistryClient, props);
     return deserializer;
   }
