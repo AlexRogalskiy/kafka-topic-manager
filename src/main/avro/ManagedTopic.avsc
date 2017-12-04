@@ -3,11 +3,6 @@
   "namespace": "se.yolean.kafka.topic.declaration",
   "type": "record",
   "fields" : [
-    {
-      "name": "op",
-      "type": "Operation",
-      "default": "EXIST"
-  	},
     {"name": "name", "type": "string" },
     {"name": "schemaRegistryKeyAvro", "type": "string", "default": null },
     {"name": "schemaRegistryValueAvro", "type": "string", "default": null }
