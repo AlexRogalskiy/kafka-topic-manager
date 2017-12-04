@@ -1,13 +1,23 @@
 package se.yolean.kafka.topic.manager;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.StringReader;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -77,34 +87,8 @@ public class ManagedTopicHandlerIntegrationTest {
     consumer.setMessageHandler(mockHandler);
     consumer.run();
 
-    // Now produce to the REST endpoint
+    // Produce a new topic declaration using the Producer API
     String newtopic1 = TN + "-newtopic1";
-    /* The whole point of this service is to expose a REST endpoint for topic declarations,
-     * but we'll be producing using the regular Kafka client for now to get the Avro right
-    JsonObject json = Json.createObjectBuilder()
-        .add("records", Json.createArrayBuilder()
-            .add(Json.createObjectBuilder()
-                .add("key", newtopic1)
-                .add("value", Json.createObjectBuilder()
-                    .add("name", newtopic1)
-                )
-            )
-        )
-        .build();
-    System.out.println(json.toString());
-    Future<Response> req = ClientBuilder.newBuilder()
-        .connectTimeout(1002, TimeUnit.MILLISECONDS) // just testing, compare with .get below
-        .build()
-        .target(restProxyUrl + "/topics/" + TT)
-        //.request(MediaType.)
-        .request("application/vnd.kafka.json.v2+json")
-        .accept("application/vnd.kafka.v2+json")
-        .async()
-        .post(Entity.entity(json.toString(), "application/vnd.kafka.json.v2+json"));
-    Response restProxyResultJson = req.get(1003, TimeUnit.MILLISECONDS);
-    System.out.println(restProxyResultJson.readEntity(String.class));
-    assertEquals(200, restProxyResultJson.getStatus());
-    */
     ManagedTopic newtopic1declaration = new ManagedTopic();
     newtopic1declaration.setName(newtopic1);
     Properties producerProps = new Properties();
@@ -135,6 +119,39 @@ public class ManagedTopicHandlerIntegrationTest {
     Mockito.verify(mockHandler, Mockito.times(1)).handle(toHandler.capture());
     ManagedTopic value = toHandler.getValue();
     assertEquals(newtopic1, value.getName());
+
+    // Produce a new topic declaration using REST Proxy
+    JsonObject json = Json.createObjectBuilder()
+        .add("records", Json.createArrayBuilder()
+            .add(Json.createObjectBuilder()
+                .add("key", newtopic1)
+                .add("value", Json.createObjectBuilder()
+                    .add("name", newtopic1)
+                )
+            )
+        )
+        .build();
+    System.out.println(json.toString());
+    Future<Response> req = ClientBuilder.newBuilder()
+        .connectTimeout(1002, TimeUnit.MILLISECONDS) // just testing, compare with .get below
+        .build()
+        .target(restProxyUrl + "/topics/" + TT)
+        //.request(MediaType.)
+        .request("application/vnd.kafka.json.v2+json")
+        .accept("application/vnd.kafka.v2+json")
+        .async()
+        .post(Entity.entity(json.toString(), "application/vnd.kafka.json.v2+json"));
+    Response restProxyResultJson = req.get(1003, TimeUnit.MILLISECONDS);
+    String restResult = restProxyResultJson.readEntity(String.class);
+    System.out.println(restResult);
+    assertEquals(200, restProxyResultJson.getStatus());
+
+    JsonReader restJson = Json.createReader(new StringReader(restResult));
+    JsonObject restOffset = restJson.readObject().getJsonArray("offsets").getJsonObject(0);
+    assertEquals(null, restOffset.getString("error", null));
+    assertEquals(-1, restOffset.getInt("error_code", -1));
+    assertNotEquals("Should have applied the management topic's -value encoding", -1, restOffset.getInt("value_schema_id", -1));
+    assertNotEquals("Should have applied the management topic's -key encoding", -1, restOffset.getInt("key_schema_id", -1));
 
     // End of this test. The topic handler has its own integration test.
   }

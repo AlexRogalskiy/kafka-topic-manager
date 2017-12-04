@@ -17,7 +17,7 @@ public class SchemaRegistryUpdate implements SchemaUpdate {
 
   private final ILogger log = SLoggerFactory.getLogger(this.getClass());
 
-  // Essential Schema Registry convention
+  // https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html#serializer
   public static final String TOPIC_SCHEMA_VALUE_SUFFIX = "-value";
   public static final String TOPIC_SCHEMA_KEY_SUFFIX = "-key";
 
