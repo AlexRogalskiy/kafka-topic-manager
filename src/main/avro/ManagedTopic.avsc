@@ -2,6 +2,7 @@
   "name": "ManagedTopic",
   "namespace": "se.yolean.kafka.topic.declaration",
   "type": "record",
+  "doc": "owner=topic-manager,topics=^_topic_declarations$,compatibility=Forward",
   "fields" : [
     {"name": "name", "type": "string" },
     {"name": "schemaRegistryKeyAvro", "type": "string", "default": null },

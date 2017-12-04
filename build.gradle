@@ -62,7 +62,6 @@ task copyToLib(type: Copy) {
 
 build.dependsOn(copyToLib)
 
-// for .editorconfig support in Eclipse
 buildscript {
   repositories {
     jcenter()
@@ -73,6 +72,8 @@ buildscript {
     classpath 'com.commercehub.gradle.plugin:gradle-avro-plugin:0.12.0'
   }
 }
+
+// for .editorconfig support in Eclipse
 apply plugin: 'org.standardout.eclipseconfig'
 
 apply plugin: 'org.unbroken-dome.test-sets'
