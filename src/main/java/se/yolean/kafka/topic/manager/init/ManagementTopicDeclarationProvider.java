@@ -17,17 +17,12 @@ public class ManagementTopicDeclarationProvider implements Provider<ManagedTopic
   @Named("management.topic.name")
   private String topicName;
 
-  @Inject
-  @Named("management.topic.rest.producer.name")
-  private String restProducerName;
-
   @Override
   public ManagedTopic get() {
     ManagedTopic topic = new ManagedTopic();
     topic.setName(topicName);
     topic.setSchemaRegistryKeyAvro(KEY_AVRO_SCHEMA);
     topic.setSchemaRegistryValueAvro(ManagedTopic.SCHEMA$.toString());
-    topic.setRestProducerEndpointName(restProducerName);
     return topic;
   }
 
