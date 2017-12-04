@@ -34,6 +34,7 @@ import com.google.inject.name.Names;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import se.yolean.kafka.topic.declaration.ManagedTopic;
 import se.yolean.kafka.topic.manager.init.ManagementTopicDeclarationProvider;
+import se.yolean.kafka.topic.manager.schemaregistry.SchemaResult;
 import se.yolean.kafka.topic.manager.tasks.TasksModule;
 
 public class ManagedTopicHandlerIntegrationTest {
@@ -121,7 +122,20 @@ public class ManagedTopicHandlerIntegrationTest {
     assertEquals(newtopic1, value.getName());
 
     // Produce a new topic declaration using REST Proxy
+    // Interesting:
+    // https://docs.confluent.io/current/kafka-rest/docs/api.html#post--topics-(string-topic_name)
+    // "after the initial request may be provided as the schema ID returned with the first response"
+    // https://groups.google.com/forum/#!topic/confluent-platform/y4WfDQ-dgGc
+    // "the easiest way is to just let the REST Proxy register the schema for you"
+
+    SchemaResult schemaResultFromInit = Mockito.mock(SchemaResult.class);
+    // we probably need this from every init, but now we'll read it from last test run's log
+    Mockito.when(schemaResultFromInit.getKeySchemaId()).thenReturn(5);
+    Mockito.when(schemaResultFromInit.getValueSchemaId()).thenReturn(6);
+
     JsonObject json = Json.createObjectBuilder()
+        .add("key_schema_id", schemaResultFromInit.getKeySchemaId())
+        .add("value_schema_id", schemaResultFromInit.getValueSchemaId())
         .add("records", Json.createArrayBuilder()
             .add(Json.createObjectBuilder()
                 .add("key", newtopic1)
