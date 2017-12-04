@@ -13,7 +13,10 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import com.github.structlog4j.ILogger;
 import com.github.structlog4j.SLoggerFactory;
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import se.yolean.kafka.topic.declaration.ManagedTopic;
+import se.yolean.kafka.topic.manager.schemaregistry.ManagedTopicDeserializer;
 
 public class TopicsLogConsumer implements Runnable {
 
@@ -39,6 +42,12 @@ public class TopicsLogConsumer implements Runnable {
   @Named("topic.declarations.consumer.polls.max")
   private int pollsMax;
 
+  @Inject
+  private KafkaAvroDeserializer deserializerSchemaRegistry;
+
+  @Inject
+  private ManagedTopicDeserializer deserializerManagedTopic;
+
   private ManagedTopicHandler handler = null;
 
   public void setMessageHandler(ManagedTopicHandler handler) {
@@ -60,27 +69,26 @@ public class TopicsLogConsumer implements Runnable {
     Properties props = new Properties();
     props.put("bootstrap.servers", bootstrapServers);
     props.put("group.id", groupId);
-    // this is essential for keeping track of which declarations we've managed to process
+    // This is essential for keeping track of which declarations we've managed to process
     props.put("enable.auto.commit", "false");
-    props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-    props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-    // we expect this to be a low frequency topic, so we can have rather long poll times but process each record immediately
+    // What happens if the service is down while a management record is produced?
+    // Can we get a notification when this happens? We're not sufficiently idempotent yet:
+    // Or should we trust our commits completely, and use "latest", possibly requiring manual re-submit of a declaration
+    props.put("auto.offset.reset", "earliest");
+    // We expect this to be a low frequency topic, so we can have rather long poll times but process each record immediately
     props.put("max.poll.records", 1);
 
-    KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+    KafkaConsumer<Object, ManagedTopic> consumer = new KafkaConsumer<>(props, deserializerSchemaRegistry, deserializerManagedTopic);
     try {
       consumer.subscribe(Collections.singleton(topicName));
 
       log.info("Starting consumer poll loop", "pollTimeout", pollTimeout, "pollMaxCount", pollsMax);
       for (int i = 0; pollsMax == -1 || i < pollsMax; i++) {
-        ConsumerRecords<String, String> records = consumer.poll(pollTimeout);
+        ConsumerRecords<Object, ManagedTopic> records = consumer.poll(pollTimeout);
         if (records.isEmpty()) {
-          log.debug("Records is empty, whatever that means");
-        }
-        if (records.count() == 0) {
           log.debug("This poll consumed no declarations");
         }
-        for (ConsumerRecord<String, String> record : records) {
+        for (ConsumerRecord<Object, ManagedTopic> record : records) {
           if (handle(null)) {
             log.info("Handler success, committing ", "partition", record.partition(), "offset", record.offset(), "managedTopicName", record.key());
             consumer.commitSync();

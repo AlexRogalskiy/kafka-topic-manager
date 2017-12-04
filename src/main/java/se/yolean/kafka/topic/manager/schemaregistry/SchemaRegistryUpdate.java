@@ -12,11 +12,14 @@ import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientExcept
 import se.yolean.kafka.topic.manager.ManagedTopicScope;
 import se.yolean.kafka.topic.manager.TODOErrorHandling;
 import se.yolean.kafka.topic.manager.tasks.SchemaUpdate;
-import se.yolean.kafka.topic.declaration.ManagedTopic;
 
 public class SchemaRegistryUpdate implements SchemaUpdate {
 
   private final ILogger log = SLoggerFactory.getLogger(this.getClass());
+
+  // Essential Schema Registry convention
+  public static final String TOPIC_SCHEMA_VALUE_SUFFIX = "-value";
+  public static final String TOPIC_SCHEMA_KEY_SUFFIX = "-key";
 
   @Inject
   private SchemaRegistryClient client;
@@ -34,7 +37,7 @@ public class SchemaRegistryUpdate implements SchemaUpdate {
       log.info("No schema update needed. Declaration contains no schema");
     }
 
-    String valueSubject = managed.getName() + "-value";
+    String valueSubject = managed.getName() + TOPIC_SCHEMA_VALUE_SUFFIX;
     org.apache.avro.Schema valueAvro = parser.parse(managed.getSchemaRegistryValueAvro());
 
     int valueSchemaId;

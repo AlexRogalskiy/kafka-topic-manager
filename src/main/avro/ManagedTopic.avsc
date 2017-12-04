@@ -10,7 +10,6 @@
   	},
     {"name": "name", "type": "string" },
     {"name": "schemaRegistryKeyAvro", "type": "string", "default": null },
-    {"name": "schemaRegistryValueAvro", "type": "string", "default": null },
-    {"name": "restProducerEndpointName", "type": "string", "default": null }
+    {"name": "schemaRegistryValueAvro", "type": "string", "default": null }
   ]
 }

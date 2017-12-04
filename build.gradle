@@ -32,6 +32,7 @@ dependencies {
   compile group: 'org.apache.kafka', name: 'kafka-clients', version: '1.0.0'
 
   compile group: 'io.confluent', name: 'kafka-schema-registry-client', version: '4.0.0'
+  compile group: 'io.confluent', name: 'kafka-avro-serializer', version: '4.0.0'
 
   runtime group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
   runtime group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.25'
@@ -43,6 +44,15 @@ dependencies {
 
   testCompile group: 'junit', name: 'junit', version: '4.12'
   testCompile group: 'org.mockito', name: 'mockito-core', version: '2.12.0'
+
+  testCompile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
+  testCompile group: 'javax.json', name: 'javax.json-api', version: '1.1.2'
+  testRuntime group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.26'
+  testRuntime group: 'org.glassfish', name: 'javax.json', version: '1.1.2'
+  // https://stackoverflow.com/a/44546979/113009
+  testRuntime group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: '2.26'
+  // java.lang.NoClassDefFoundError: javax/activation/DataSource
+  testRuntime group: 'javax.activation', name: 'activation', version: '1.1.1'
 }
 
 task copyToLib(type: Copy) {
